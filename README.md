@@ -19,7 +19,7 @@
 ---
 
 ## 🎮 사용 방법
-1. [사이트에 접속](https://ekdms05.github.io/Engraving-Simulator)
+1. [사이트에 접속](https://ekdms05.github.io/Engraving-Simulator/)
 2. 슬롯 클릭 → 각인 종류 선택 → 시도!
 3. 상단에 사용한 전과 예상 현금 금액이 표시됩니다
 4. 비율은 1억당 45000원 ( 편의상 계산 )
