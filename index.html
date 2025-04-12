@@ -188,6 +188,28 @@
     background: #333;
     transform: translateY(-1px);
   }
+
+  .reset-btn {
+  display: inline-block;
+  margin: 4px 6px;
+  background: linear-gradient(to right, #222, #444);
+  border: 1px solid #666;
+  border-radius: 6px;
+  color: #ffcc66;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 6px 12px;
+  min-width: 100px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reset-btn:hover {
+  background: linear-gradient(to right, #444, #666);
+  color: #fff5cc;
+  transform: translateY(-1px);
+}
+
             
   </style>
 </head>
@@ -441,6 +463,12 @@ white-space: pre-line;
 
 <!-- 이펙트 표시용 이미지 (처음엔 안보임) -->
 <img id="effectImage" src="" style="position: absolute; left: 230px; top: 100px; width: 180px; display: none; pointer-events: none; z-index: 999;">
+
+<!-- 🔄 초기화 버튼들 (중앙 정렬, 좁은 가로폭) -->
+<div style="margin-top: 12px; text-align: center;">
+  <button class="reset-btn" onclick="resetSelectedEngraving()">🧹 선택 초기화</button>
+  <button class="reset-btn" onclick="resetAllEngravings()">🧼 전체 초기화</button>
+</div>
 
 <!-- 사용량 요약 테이블 표시 -->
 <div id="usageTable" style="
@@ -778,9 +806,15 @@ function applyHwangryongCopy(type) {
   if (selectedSlot !== 0) return updateLog("황룡 슬롯에서만 사용할 수 있습니다.");
 
   const state = slotStates[0];
-
   if (state.flat !== null) {
     return updateLog("황룡 슬롯에 이미 잠재력이 각인되어 있습니다.");
+  }
+
+  // ✅ 여기에서 주작~현무 슬롯에 앞각(flat)이 모두 존재하는지 검사
+  const requiredSlots = [1, 2, 3, 4];
+  const allReady = requiredSlots.every(i => slotStates[i].flat != null);
+  if (!allReady) {
+    return updateLog("🛑 주작, 백호, 청룡, 현무 모두에 앞각이 있어야 황룡에 복사할 수 있습니다.");
   }
 
   // 💸 비용 차감 먼저
@@ -810,12 +844,13 @@ function applyHwangryongCopy(type) {
 
   slotStates[0].flat = source.flat;
   slotStates[0].add = source.add ?? undefined;
-  slotStates[0].statType = source.statType; // << 이게 빠져 있었던 문제
+  slotStates[0].statType = source.statType;
 
   updateSlotDisplay(0);
   updateLog(`[황룡] ${type}잠재력각인비서 성공! ${slotNames[chosen]}의 각인을 복사했습니다.`);
   updateTotalStatUI();
 }
+
 
 
 function applyTranscend() {
@@ -1207,6 +1242,32 @@ function switchStatTab(stat) {
   updateSlotDisplayAll(); // 슬롯 표시 업데이트
   updateTotalStatUI(); // 상단 총 수치 갱신
 }
+
+// 전체 초기화
+function resetAllEngravings() {
+  if (!confirm("정말 모든 슬롯의 각인을 초기화할까요?")) return;
+
+  for (let i = 0; i < slotStates.length; i++) {
+    slotStates[i] = { flat: null };
+    updateSlotDisplay(i);
+  }
+
+  updateLog("🧼 모든 슬롯이 초기화되었습니다.");
+  updateTotalStatUI();
+}
+
+// 선택 슬롯 초기화
+function resetSelectedEngraving() {
+  if (selectedSlot === null) return updateLog("먼저 초기화할 슬롯을 선택하세요.");
+  if (!confirm(`${slotNames[selectedSlot]} 슬롯을 초기화할까요?`)) return;
+
+  slotStates[selectedSlot] = { flat: null };
+  updateSlotDisplay(selectedSlot);
+  updateLog(`🧹 ${slotNames[selectedSlot]} 슬롯이 초기화되었습니다.`);
+  updateTotalStatUI();
+}
+
+
 
 document.addEventListener('DOMContentLoaded', () => {
   renderStatTabs();     // 탭 생성
