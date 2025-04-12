@@ -435,18 +435,24 @@ function showEffect(type) {
   function applyHwangryongCopy(type) {
     if (selectedSlot !== 0) return updateLog("황룡 슬롯에서만 사용할 수 있습니다.");
 
-    // 💸 여기 추가!
-    if (!spend(priceTable.hwangryong[type])) return;
+    const state = slotStates[0];
+
+    // 이미 잠재력이 박혀 있으면 막기
+    if (state.flat !== null) {
+      return updateLog("황룡 슬롯에 이미 잠재력이 각인되어 있습니다.");
+    }
 
     const successRate = type === '희귀' ? 5 : 3;
     const success = Math.random() * 100 < successRate;
 
     hwangryongUsage[type]++;
     hwangryongSlotUsage[type]++;
+
     updateUsageSummary();
 
     if (!success) {
       updateLog(`[황룡] ${type}잠재력각인비서 실패!`);
+
       return;
     }
 
@@ -459,12 +465,14 @@ function showEffect(type) {
       return;
     }
 
+    // 복사 수행
     slotStates[0].flat = source.flat;
     slotStates[0].add = source.add ?? undefined;
 
     updateSlotDisplay(0);
     updateLog(`[황룡] ${type}잠재력각인비서 성공! ${slotNames[chosen]}의 각인을 복사했습니다.`);
   }
+
 
   function applyTranscend() {
   if (selectedSlot === null) return updateLog("슬롯을 먼저 선택하세요.");
@@ -582,7 +590,7 @@ function getAddValue(type, flatValue) {
 }
 
 // 초기 소지금
-let gold = 20000000000; // 200억 전
+let gold = 30000000000; // 200억 전
 const initialGold = gold;
 
 const priceTable = {
