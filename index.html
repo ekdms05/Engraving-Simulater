@@ -112,8 +112,18 @@
       font-weight: bold;
     }
 
+    label {
+      display: block;
+      margin: 4px 0;
+    }
 
-    
+    label input {
+      float: right;
+      width: 120px;
+      text-align: right;
+      margin-left: 10px;
+    }
+        
   </style>
 </head>
 <body>
@@ -131,6 +141,106 @@ border-radius: 6px;
 padding: 6px;
 white-space: pre-line;
 "></div>
+
+<!-- 💸 가격 설정 토글 버튼 -->
+<div style="width: 663px; margin: 0 auto; text-align: center;">
+  <button id="priceToggle" onclick="togglePriceConfig()" style="
+    background: #444;
+    color: #fff;
+    padding: 6px 12px;
+    border: 1px solid #888;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 8px;
+  ">💸 비서 가격 설정 펼치기</button>
+</div>
+
+<div id="priceConfig" style="
+  display: none;
+  width: 663px;
+  margin: 8px auto 12px;
+  background: rgba(255,255,255,0.05);
+  padding: 14px 20px;
+  border: 1px solid #666;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  box-shadow: 0 0 6px #000;
+">
+  <div style="display: flex;">
+    <!-- 왼쪽 컬럼 -->
+    <div style="flex: 1; padding-right: 20px; border-right: 1px solid #555;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span>🛡️ 신 앞각:</span>
+        <input type="number" id="priceFlat신" value="3600000" style="width: 100px; text-align: right;">
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span>🛡️ 보물 앞각:</span>
+        <input type="number" id="priceFlat보물" value="6000000" style="width: 100px; text-align: right;">
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span>🛡️ 전설 앞각:</span>
+        <input type="number" id="priceFlat전설" value="25000000" style="width: 100px; text-align: right;">
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span>⚔️ 도깨비 뒷각:</span>
+        <input type="number" id="priceAdd도깨비" value="6400000" style="width: 100px; text-align: right;">
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span>⚔️ 보물 뒷각:</span>
+        <input type="number" id="priceAdd보물" value="18000000" style="width: 100px; text-align: right;">
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span>⚔️ 전설 뒷각:</span>
+        <input type="number" id="priceAdd전설" value="35000000" style="width: 100px; text-align: right;">
+      </div>
+    </div>
+
+    <!-- 오른쪽 컬럼 -->
+    <div style="flex: 1; padding-left: 20px;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span>🐉 [신수] 1.8%:</span>
+        <input type="number" id="priceAdd[신수]1.8" value="4600000" style="width: 100px; text-align: right;">
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span>🐉 [신수] 1.5%:</span>
+        <input type="number" id="priceAdd[신수]1.5" value="6000000" style="width: 100px; text-align: right;">
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span>🐉 [신수] 1.0%:</span>
+        <input type="number" id="priceAdd[신수]1.0" value="3500000" style="width: 100px; text-align: right;">
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span>🐲 황룡 일반:</span>
+        <input type="number" id="priceHwang일반" value="80000000" style="width: 100px; text-align: right;">
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span>🐲 황룡 희귀:</span>
+        <input type="number" id="priceHwang희귀" value="15000000" style="width: 100px; text-align: right;">
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span>✨ 초월:</span>
+        <input type="number" id="priceTranscend" value="700000000" style="width: 100px; text-align: right;">
+      </div>
+    </div>
+  </div>
+
+  <!-- 버튼 영역 -->
+  <div style="text-align: center; margin-top: 14px;">
+    <button onclick="applyNewPrices()" style="
+      background: #2c74c4;
+      color: #fff;
+      padding: 6px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+    ">💾 가격 반영</button>
+  </div>
+</div>
+
+
 
 <div class="background">
   <div class="slot gold" onclick="selectSlot(0)">
@@ -668,6 +778,39 @@ function updateGoldUI() {
   const cash = Math.round((used / 100000000) * 45000);
   document.getElementById("goldStatus").innerText =
     `💰 사용 금전: ${used.toLocaleString()}전 | 💴 환산: 약 ${cash.toLocaleString()}원 | 남은 금전: ${gold.toLocaleString()}전`;
+}
+
+function togglePriceConfig() {
+  const div = document.getElementById('priceConfig');
+  const btn = document.getElementById('priceToggle');
+  if (div.style.display === 'none') {
+    div.style.display = 'block';
+    btn.innerText = '💸 비서 가격 설정 접기';
+  } else {
+    div.style.display = 'none';
+    btn.innerText = '💸 비서 가격 설정 펼치기';
+  }
+}
+
+function applyNewPrices() {
+  priceTable.flat["신"] = +document.getElementById("priceFlat신").value;
+  priceTable.flat["보물"] = +document.getElementById("priceFlat보물").value;
+  priceTable.flat["전설"] = +document.getElementById("priceFlat전설").value;
+  priceTable.add["도깨비"] = +document.getElementById("priceAdd도깨비").value;
+  priceTable.add["보물"] = +document.getElementById("priceAdd보물").value;
+  priceTable.add["전설"] = +document.getElementById("priceAdd전설").value;
+  priceTable.add["[신수]1.8"] = +document.getElementById("priceAdd[신수]1.8").value;
+  priceTable.add["[신수]1.5"] = +document.getElementById("priceAdd[신수]1.5").value;
+  priceTable.add["[신수]1.0"] = +document.getElementById("priceAdd[신수]1.0").value;
+  priceTable.hwangryong["일반"] = +document.getElementById("priceHwang일반").value;
+  priceTable.hwangryong["희귀"] = +document.getElementById("priceHwang희귀").value;
+  priceTable.transcend = +document.getElementById("priceTranscend").value;
+  alert("💰 가격이 성공적으로 반영되었습니다!");
+}
+
+function togglePricePanel() {
+  const panel = document.getElementById('pricePanel');
+  panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
