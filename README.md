@@ -1,6 +1,6 @@
 # 🎴 각인 시뮬레이터 (Engraving Simulator)
 
-<img src="https://your-username.github.io/engraving-simulator/assets/preview.gif" width="100%" alt="시뮬레이터 미리보기"/>
+<img src="https://ekdms05.github.io/Engraving-Simulater/assets/preview.gif" width="100%" alt="시뮬레이터 미리보기"/>
 
 ## 📌 소개
 도깨비방어구관통 시스템을 웹으로 시뮬레이션할 수 있는 도구입니다.  
@@ -19,7 +19,7 @@
 ---
 
 ## 🎮 사용 방법
-1. [사이트에 접속](https://ekdms05.github.io/engraving-simulator)
+1. [사이트에 접속](https://ekdms05.github.io/Engraving-Simulater)
 2. 슬롯 클릭 → 각인 종류 선택 → 시도!
 3. 상단에 사용한 전과 예상 현금 금액이 표시됩니다
 4. 비율은 1억당 45000원 ( 편의상 계산 )
