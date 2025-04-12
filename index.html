@@ -567,7 +567,7 @@ function applyAdd(type) {
   const currentAdd = state.add ?? 0;
 
   // ✅ 최대치 제한: 앞각의 50% 이상이면 불가
-  if (state.add !== undefined && currentAdd >= state.flat * 0.5) {
+  if (state.add !== undefined && currentAdd >= state.flat * 0.45) {
     return updateLog("⚠️ 뒷각 수치가 이미 앞각의 50% 이상입니다. 더 이상 각인할 수 없습니다.");
   }
 
