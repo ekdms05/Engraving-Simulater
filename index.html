@@ -173,6 +173,10 @@ white-space: pre-line;
 
     <!-- 뒷각 -->
     <div id="tab-add" class="engraving-tab" style="display:none;">
+      <!-- 신수 뒷각 추가 -->
+      <button onclick="applyAdd('[신수]1.8')">[신수]고급방어구관통추가각인비서(+1.8%)</button>
+      <button onclick="applyAdd('[신수]1.5')">[신수]고급방어구관통추가각인비서(+1.5%)</button>
+      <button onclick="applyAdd('[신수]1.0')">[신수]고급방어구관통추가각인비서(+1.0%)</button>
       <button onclick="applyAdd('도깨비')">도깨비추가각인비서</button>
       <button onclick="applyAdd('보물')">보물도깨비추가각인비서</button>
       <button onclick="applyAdd('전설')">전설도깨비추가각인비서</button>
@@ -216,13 +220,19 @@ white-space: pre-line;
   const totalAddUsage = {
     "도깨비": 0,
     "보물": 0,
-    "전설": 0
+    "전설": 0,
+    "[신수]1.8": 0,
+    "[신수]1.5": 0,
+    "[신수]1.0": 0
   };
 
-  const slotAddUsage = Array.from({ length: 5 }, () => ({
+    const slotAddUsage = Array.from({ length: 5 }, () => ({
     "도깨비": 0,
     "보물": 0,
-    "전설": 0
+    "전설": 0,
+    "[신수]1.8": 0,
+    "[신수]1.5": 0,
+    "[신수]1.0": 0
   }));
 
 
@@ -284,12 +294,14 @@ function switchTab(tab) {
 function applyFlat(type) {
   if (selectedSlot === null) return updateLog("먼저 슬롯을 선택하세요.");
 
+  // ✅ 황룡 슬롯은 앞각 비서 사용 금지
+  if (selectedSlot === 0) return updateLog("황룡 슬롯에는 앞각 비서를 사용할 수 없습니다.");
+
   const current = slotStates[selectedSlot].flat;
   if (current !== null && current >= 3.70) {
     return updateLog("앞각 수치가 최대입니다. 더 이상 각인할 수 없습니다.");
   }
 
-  // 💸 여기 추가!
   if (!spend(priceTable.flat[type])) return;
 
   const flat = getFlatValue(type);
@@ -306,26 +318,61 @@ function applyFlat(type) {
 
 
 
+
 function applyAdd(type) {
   if (selectedSlot === null) return updateLog("먼저 슬롯을 선택하세요.");
+  if (selectedSlot === 0) return updateLog("황룡 슬롯에는 뒷각을 사용할 수 없습니다.");
+
   const state = slotStates[selectedSlot];
   if (state.flat === null) return updateLog("앞각이 없는 슬롯에는 뒷각을 사용할 수 없습니다.");
-  if ((state.add ?? 0) >= 1.90) return updateLog("뒷각 수치가 최대입니다. 더 이상 각인할 수 없습니다.");
 
-  // 💸 여기 추가!
-  if (!spend(priceTable.add[type])) return;
+  const currentAdd = state.add ?? 0;
 
-  const addValue = getAddValue(type, state.flat);
+  // 신수 최대각 방지
+  if (["[신수]1.8", "[신수]1.5", "[신수]1.0"].includes(type) && currentAdd >= 1.8) {
+    return updateLog("이미 최대 수치의 뒷각이 각인되어 있어 신수추각 비서를 사용할 수 없습니다.");
+  }
+
+  if (currentAdd >= 1.90) return updateLog("뒷각 수치가 최대입니다. 더 이상 각인할 수 없습니다.");
+
+  let addValue = null;
+  let success = true;
+
+  if (["[신수]1.8", "[신수]1.5", "[신수]1.0"].includes(type)) {
+    if (!spend(priceTable.add[type])) return;
+
+    const successRate = {
+      "[신수]1.8": 0.01,
+      "[신수]1.5": 0.05,
+      "[신수]1.0": 0.10
+    }[type];
+
+    success = Math.random() < successRate;
+    addValue = parseFloat(type.match(/\d\.\d/)[0]);
+
+    // ✅ 실패해도 카운트
+    totalAddUsage[type] = (totalAddUsage[type] || 0) + 1;
+    slotAddUsage[selectedSlot][type] = (slotAddUsage[selectedSlot][type] || 0) + 1;
+
+    if (!success) {
+      updateLog(`❌ ${slotNames[selectedSlot]} 슬롯에 ${type} 실패!`);
+      updateUsageSummary();
+      return;
+    }
+  } else {
+    if (!spend(priceTable.add[type])) return;
+    addValue = getAddValue(type, state.flat);
+    totalAddUsage[type]++;
+    slotAddUsage[selectedSlot][type]++;
+  }
+
   state.add = addValue;
-
-  totalAddUsage[type]++;
-  slotAddUsage[selectedSlot][type]++;
-
   updateSlotDisplay(selectedSlot);
-  updateLog(`${slotNames[selectedSlot]} 슬롯에 ${type} 추가각인비서로 뒷각 +${addValue}% 적용됨`);
+  updateLog(`✅ ${slotNames[selectedSlot]} 슬롯에 ${type} 성공! 뒷각 +${addValue}% 적용됨`);
   updateUsageSummary();
   showEffect("add");
 }
+
 
 
   function clearEngraving() {
@@ -357,7 +404,7 @@ function updateSlotDisplay(index) {
     let text = `　　방어구관통\n+${flat}%[x] <span style="color:${color}">+${add}%[x]</span>`;
 
     if (level > 0) {
-      text += `<br><span style="color:${color}">(　초월강화 +${level}강)</span>`;
+      text += `<br><span style="color:${color}">(　초월강화 +${level}강 )</span>`;
     }
 
     textEl.innerHTML = text;
@@ -401,6 +448,7 @@ function showEffect(type) {
   html += `<ul style="margin-top:4px; padding-left:18px;">`;
   html += `<li>앞각 - 신: ${totalUsage["신"]}장, 보물: ${totalUsage["보물"]}장, 전설: ${totalUsage["전설"]}장</li>`;
   html += `<li>뒷각 - 도깨비: ${totalAddUsage["도깨비"]}장, 보물: ${totalAddUsage["보물"]}장, 전설: ${totalAddUsage["전설"]}장</li>`;
+  html += `<li>뒷각 - [신수]1.8%: ${totalAddUsage["[신수]1.8"]}장, 1.5%: ${totalAddUsage["[신수]1.5"]}장, 1.0%: ${totalAddUsage["[신수]1.0"]}장</li>`;
   html += `<li>황룡 - 일반: ${hwangryongUsage["일반"]}장, 희귀: ${hwangryongUsage["희귀"]}장</li>`;
   html += `</ul>`;
 
@@ -414,7 +462,7 @@ function showEffect(type) {
     const flatStr = Object.entries(slotUsage[i]).filter(([_, v]) => v > 0)
         .map(([k, v]) => `'${k}': ${v}장`).join(', ') || '-';
 
-    const addStr = Object.entries(slotAddUsage[i]).filter(([_, v]) => v > 0)
+        const addStr = Object.entries(slotAddUsage[i]).filter(([_, v]) => v > 0)
         .map(([k, v]) => `${k}: ${v}장`).join(', ') || '-';
 
     const hwangStr = (i === 0)
@@ -595,7 +643,10 @@ const initialGold = gold;
 
 const priceTable = {
   flat: { "신": 3600000, "보물": 6000000, "전설": 25000000 },
-  add:  { "도깨비": 6400000, "보물": 18000000, "전설": 35000000 },
+  add:  { "도깨비": 6400000, "보물": 18000000, "전설": 35000000,
+    "[신수]1.8": 4600000,
+    "[신수]1.5": 6000000,
+    "[신수]1.0": 3500000 },
   hwangryong: { "일반": 80000000, "희귀": 15000000 },
   transcend: 700000000
 };
