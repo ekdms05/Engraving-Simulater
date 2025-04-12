@@ -123,7 +123,17 @@
       text-align: right;
       margin-left: 10px;
     }
-        
+
+    #customImage {
+      position: absolute;
+      left: 675px;
+      top: 233px;
+      width: 120px;
+      height: auto;
+      z-index: 10;
+      pointer-events: none; /* 클릭 막기 */
+    }
+            
   </style>
 </head>
 <body>
@@ -142,8 +152,7 @@
   box-shadow: 0 0 5px #000;
   border: 1px solid #555;
 ">
-  🛠️ 각인, 돋 직작 낭만의 시대를 열겠습니다 🛠️<br>
-  현명한 대장장이들의 스택쌓는곳 (전쿠린@연) <br>
+  🛠️ 현명한 대장장이들의 스택쌓는곳 🛠️ 만든사람 : 전쿠린@연 <br>
 </div>
 
 <!-- 🔥 상단 소지금 표시 영역 -->
@@ -276,7 +285,7 @@ white-space: pre-line;
 </div>
 
 
-
+<img src="kurin2.png" id="customImage">
 <div class="background">
   <div class="slot gold" onclick="selectSlot(0)">
     <img src="hwangryong.png" alt="황룡">
