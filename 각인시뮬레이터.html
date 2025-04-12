@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>각인 시뮬레이터</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      font-family: 'Malgun Gothic', sans-serif;
+    }
+    .background {
+      background-image: url('background.png'); /* 배경 이미지 */
+      background-size: cover;
+      width: 663px;
+      height: 501px;
+      position: relative;
+      margin: 20px auto;
+      box-shadow: 0 0 15px #000;
+    }
+
+    .slot {
+      position: absolute;
+      left: 17px;
+      width: 170px;
+      height: 45px;
+      display: flex;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.45);
+      border: 2px solid transparent;
+      border-radius: 6px;
+      padding: 3px 10px;
+      color: #ffff00;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .slot img {
+      width: 48px;
+      height: 48px;
+      margin-right: 10px;
+    }
+
+    .slot:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .gold  { border-color: #d8b133; }
+    .red   { border-color: #db5a29; }
+    .white { border-color: #ccc; }
+    .blue  { border-color: #2c74c4; }
+    .green { border-color: #4caf50; }
+
+    .slot:nth-child(1) { top: 170px; } /* 황룡 */
+    .slot:nth-child(2) { top: 232px; } /* 주작 */
+    .slot:nth-child(3) { top: 290px; } /* 백호 */
+    .slot:nth-child(4) { top: 345px; } /* 청룡 */
+    .slot:nth-child(5) { top: 400px; } /* 현무 */
+
+    .engraving-buttons {
+      position: absolute;
+      right: 10px;
+      top: 150px;
+      width: 390px;
+    }
+
+    .engraving-buttons button {
+      margin: 4px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      background: #333;
+      color: white;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .engraving-buttons button:hover {
+      background: #555;
+    }
+
+    .log {
+      margin-top: 8px;
+      background: rgba(0,0,0,0.5);
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #333;
+      font-size: 12px;
+      color: #fff;
+    }
+    
+    .tab-buttons {
+      position: absolute;
+      top: -110px;
+      left: 0px;
+    }
+
+    .tab-buttons button {
+      margin: 2px;
+      padding: 6px 10px;
+      font-size: 12px;
+      background: #222;
+      color: white;
+      border: 1px solid #555;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .tab-buttons button.active {
+      background: #666;
+      font-weight: bold;
+    }
+
+
+    
+  </style>
+</head>
+<body>
+<!-- 🔥 상단 소지금 표시 영역 -->
+<div id="goldStatus" class="log" style="
+width: 663px;
+margin: 8px auto;
+background: rgba(0,0,0,0.7);
+font-size: 13px;
+font-weight: bold;
+color: #ffffcc;
+text-align: center;
+border: 1px solid #555;
+border-radius: 6px;
+padding: 6px;
+white-space: pre-line;
+"></div>
+
+<div class="background">
+  <div class="slot gold" onclick="selectSlot(0)">
+    <img src="hwangryong.png" alt="황룡">
+    <span id="text0">봉인된 문양</span>
+  </div>
+  <div class="slot red" onclick="selectSlot(1)">
+    <img src="juzak.png" alt="주작">
+    <span id="text1">봉인된 문양</span>
+  </div>
+  <div class="slot white" onclick="selectSlot(2)">
+    <img src="baekho.png" alt="백호">
+    <span id="text2">봉인된 문양</span>
+  </div>
+  <div class="slot blue" onclick="selectSlot(3)">
+    <img src="cheongryong.png" alt="청룡">
+    <span id="text3">봉인된 문양</span>
+  </div>
+  <div class="slot green" onclick="selectSlot(4)">
+    <img src="hyeonmu.png" alt="현무">
+    <span id="text4">봉인된 문양</span>
+  </div>
+
+  <!-- 각인 버튼 -->
+  <div class="engraving-buttons">
+    <!-- ✅ 이건 남겨야 함 -->
+    <div class="tab-buttons">
+      <button onclick="switchTab('flat')">앞각</button>
+      <button onclick="switchTab('add')">뒷각</button>
+      <button onclick="switchTab('hwangryong')">황룡</button>
+      <button onclick="switchTab('transcend')">초월</button>
+    </div>
+
+    <!-- 앞각 -->
+    <div id="tab-flat" class="engraving-tab">
+      <button onclick="applyFlat('신')">도깨비방어구관통'신</button>
+      <button onclick="applyFlat('보물')">보물도깨비방어구관통</button>
+      <button onclick="applyFlat('전설')">전설도깨비방어구관통</button>
+    </div>
+
+    <!-- 뒷각 -->
+    <div id="tab-add" class="engraving-tab" style="display:none;">
+      <button onclick="applyAdd('도깨비')">도깨비추가각인비서</button>
+      <button onclick="applyAdd('보물')">보물도깨비추가각인비서</button>
+      <button onclick="applyAdd('전설')">전설도깨비추가각인비서</button>
+    </div>
+
+    <!-- 황룡 -->
+    <div id="tab-hwangryong" class="engraving-tab" style="display:none;">
+      <button onclick="applyHwangryongCopy('일반')">[황룡] 잠재력각인비서</button>
+      <button onclick="applyHwangryongCopy('희귀')">[황룡] 희귀잠재력각인비서</button>
+    </div>
+
+    <!-- 초월 -->
+    <div id="tab-transcend" class="engraving-tab" style="display:none;">
+      <button onclick="applyTranscend()">초월각인비서 사용</button>
+    </div>
+
+    <div class="log" id="log">슬롯을 선택한 후 비서를 사용하세요.</div>
+    <div class="log" id="usageSummary" style="margin-top:4px;"></div>
+
+  </div>
+</div>
+
+<!-- 이펙트 표시용 이미지 (처음엔 안보임) -->
+<img id="effectImage" src="" style="position: absolute; left: 230px; top: 100px; width: 180px; display: none; pointer-events: none; z-index: 999;">
+
+<!-- 사용량 요약 테이블 표시 -->
+<div id="usageTable" style="
+  margin: 8px auto; 
+  width: 663px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: 10px;
+  border: 1px solid #444;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: pre-line;
+"></div>
+
+
+<script>
+  const totalAddUsage = {
+    "도깨비": 0,
+    "보물": 0,
+    "전설": 0
+  };
+
+  const slotAddUsage = Array.from({ length: 5 }, () => ({
+    "도깨비": 0,
+    "보물": 0,
+    "전설": 0
+  }));
+
+
+  const slotNames = ["황룡", "주작", "백호", "청룡", "현무"];
+  const slotStates = Array.from({ length: 5 }, () => ({ flat: null }));
+  let selectedSlot = null;
+
+  function selectSlot(index) {
+    document.querySelectorAll('.slot').forEach(el => el.classList.remove('selected'));
+    selectedSlot = index;
+    document.querySelectorAll('.slot')[index].classList.add('selected');
+    updateLog(`${slotNames[index]} 슬롯 선택됨`);
+  }
+
+  const totalUsage = {
+  "신": 0,
+  "보물": 0,
+  "전설": 0
+  };
+
+  const slotUsage = Array.from({ length: 5 }, () => ({
+    "신": 0,
+    "보물": 0,
+    "전설": 0
+  }));
+  
+  const hwangryongUsage = {
+  "일반": 0,
+  "희귀": 0
+};
+
+const hwangryongSlotUsage = {
+  "일반": 0,
+  "희귀": 0
+};
+
+
+function switchTab(tab) {
+  // 모든 탭 숨기기
+  document.querySelectorAll('.engraving-tab').forEach(div => div.style.display = 'none');
+
+  // 모든 버튼 비활성화
+  document.querySelectorAll('.tab-buttons button').forEach(btn => btn.classList.remove('active'));
+
+  // 선택한 탭 보이기
+  document.getElementById(`tab-${tab}`).style.display = 'block';
+
+  // 선택한 버튼 활성화
+  const idx = {flat: 0, add: 1, hwangryong: 2, transcend: 3}[tab];
+  document.querySelectorAll('.tab-buttons button')[idx].classList.add('active');
+}
+
+
+
+  function roundToOneDecimal(value) {
+  return Math.round(value * 10) / 10;
+}
+
+function applyFlat(type) {
+  if (selectedSlot === null) return updateLog("먼저 슬롯을 선택하세요.");
+
+  const current = slotStates[selectedSlot].flat;
+  if (current !== null && current >= 3.70) {
+    return updateLog("앞각 수치가 최대입니다. 더 이상 각인할 수 없습니다.");
+  }
+
+  // 💸 여기 추가!
+  if (!spend(priceTable.flat[type])) return;
+
+  const flat = getFlatValue(type);
+  slotStates[selectedSlot].flat = flat;
+
+  totalUsage[type]++;
+  slotUsage[selectedSlot][type]++;
+
+  updateSlotDisplay(selectedSlot);
+  updateLog(`${slotNames[selectedSlot]} 슬롯에 ${type} 비서로 앞각 +${flat}% 적용됨`);
+  updateUsageSummary();
+  showEffect("flat");
+}
+
+
+
+function applyAdd(type) {
+  if (selectedSlot === null) return updateLog("먼저 슬롯을 선택하세요.");
+  const state = slotStates[selectedSlot];
+  if (state.flat === null) return updateLog("앞각이 없는 슬롯에는 뒷각을 사용할 수 없습니다.");
+  if ((state.add ?? 0) >= 1.90) return updateLog("뒷각 수치가 최대입니다. 더 이상 각인할 수 없습니다.");
+
+  // 💸 여기 추가!
+  if (!spend(priceTable.add[type])) return;
+
+  const addValue = getAddValue(type, state.flat);
+  state.add = addValue;
+
+  totalAddUsage[type]++;
+  slotAddUsage[selectedSlot][type]++;
+
+  updateSlotDisplay(selectedSlot);
+  updateLog(`${slotNames[selectedSlot]} 슬롯에 ${type} 추가각인비서로 뒷각 +${addValue}% 적용됨`);
+  updateUsageSummary();
+  showEffect("add");
+}
+
+
+  function clearEngraving() {
+    if (selectedSlot === null) return updateLog("먼저 슬롯을 선택하세요.");
+
+    slotStates[selectedSlot].flat = null;
+    updateSlotDisplay(selectedSlot);
+    updateLog(`${slotNames[selectedSlot]} 슬롯의 각인이 제거되었습니다.`);
+  }
+
+  function getTranscendAddColor(level) {
+  if (level === 3) return '#d0a9f5';  // 연보라
+  if (level === 2) return '#ff6a00';  // 찐주황
+  if (level === 1) return '#e0b84a';  // 황토+노랑
+  return '#ffffff';
+}
+
+function updateSlotDisplay(index) {
+  const state = slotStates[index];
+  const textEl = document.getElementById(`text${index}`);
+
+  if (state.flat !== null && state.add !== undefined) {
+    const flat = state.flat.toFixed(2);
+    const add = state.add.toFixed(1);
+
+    const level = state.transcendLevel || 0;
+    const color = level > 0 ? getTranscendAddColor(level) : '#ffff00';
+
+    let text = `　　방어구관통\n+${flat}%[x] <span style="color:${color}">+${add}%[x]</span>`;
+
+    if (level > 0) {
+      text += `<br><span style="color:${color}">(　초월강화 +${level}강)</span>`;
+    }
+
+    textEl.innerHTML = text;
+  } else if (state.flat !== null) {
+    textEl.innerText = `　　방어구관통\n+${state.flat.toFixed(2)}%[x]`;
+  } else {
+    textEl.innerText = `　　　봉인된 문양`;
+  }
+}
+
+function showEffect(type) {
+  const effect = document.createElement('img');
+  effect.src = `effects/effect_${type}.gif`; // flat, add, transcend 중 하나
+  effect.className = 'effect-gif';
+  
+  // 슬롯 위치 중앙에 맞추기
+  const slot = document.querySelectorAll('.slot')[selectedSlot];
+  const rect = slot.getBoundingClientRect();
+
+  effect.style.position = 'absolute';
+  effect.style.left = `${rect.left + rect.width / 2}px`;
+  effect.style.top = `${rect.top + rect.height / 2}px`;
+  effect.style.transform = 'translate(-50%, -50%)';
+  effect.style.pointerEvents = 'none';
+  effect.style.zIndex = '999';
+
+  document.body.appendChild(effect);
+
+  setTimeout(() => {
+    effect.remove();
+  }, 800); // 자동 제거
+}
+
+
+  function updateLog(msg) {
+    document.getElementById("log").innerText = msg;
+  }
+
+  function updateUsageSummary() {
+  let html = `<b>📦 총 사용량</b><br>`;
+  html += `<ul style="margin-top:4px; padding-left:18px;">`;
+  html += `<li>앞각 - 신: ${totalUsage["신"]}장, 보물: ${totalUsage["보물"]}장, 전설: ${totalUsage["전설"]}장</li>`;
+  html += `<li>뒷각 - 도깨비: ${totalAddUsage["도깨비"]}장, 보물: ${totalAddUsage["보물"]}장, 전설: ${totalAddUsage["전설"]}장</li>`;
+  html += `<li>황룡 - 일반: ${hwangryongUsage["일반"]}장, 희귀: ${hwangryongUsage["희귀"]}장</li>`;
+  html += `</ul>`;
+
+  html += `<b>📌 슬롯별 사용량</b><br>`;
+  html += `<table style="width:100%; border-collapse: collapse; margin-top: 5px;">`;
+  html += `<thead><tr style="background:#222;"><th style="padding:2px;">슬롯</th><th>앞각</th><th>뒷각</th><th>황룡</th></tr></thead>`;
+  html += `<tbody>`;
+
+  for (let i = 0; i < 5; i++) {
+    const name = slotNames[i];
+    const flatStr = Object.entries(slotUsage[i]).filter(([_, v]) => v > 0)
+        .map(([k, v]) => `'${k}': ${v}장`).join(', ') || '-';
+
+    const addStr = Object.entries(slotAddUsage[i]).filter(([_, v]) => v > 0)
+        .map(([k, v]) => `${k}: ${v}장`).join(', ') || '-';
+
+    const hwangStr = (i === 0)
+      ? Object.entries(hwangryongSlotUsage).filter(([_, v]) => v > 0)
+        .map(([k, v]) => `${k}: ${v}장`).join(', ') || '-'
+      : '-';
+
+    html += `<tr style="text-align:center;"><td>${name}</td><td>${flatStr}</td><td>${addStr}</td><td>${hwangStr}</td></tr>`;
+  }
+
+  html += `</tbody></table>`;
+
+  document.getElementById("usageTable").innerHTML = html;
+}
+
+
+
+  function applyHwangryongCopy(type) {
+    if (selectedSlot !== 0) return updateLog("황룡 슬롯에서만 사용할 수 있습니다.");
+
+    // 💸 여기 추가!
+    if (!spend(priceTable.hwangryong[type])) return;
+
+    const successRate = type === '희귀' ? 5 : 3;
+    const success = Math.random() * 100 < successRate;
+
+    hwangryongUsage[type]++;
+    hwangryongSlotUsage[type]++;
+    updateUsageSummary();
+
+    if (!success) {
+      updateLog(`[황룡] ${type}잠재력각인비서 실패!`);
+      return;
+    }
+
+    const candidates = [1, 2, 3, 4]; // 주작~현무
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    const source = slotStates[chosen];
+
+    if (!source.flat) {
+      updateLog(`[황룡] 선택된 슬롯(${slotNames[chosen]})에 앞각이 없어 복사 실패`);
+      return;
+    }
+
+    slotStates[0].flat = source.flat;
+    slotStates[0].add = source.add ?? undefined;
+
+    updateSlotDisplay(0);
+    updateLog(`[황룡] ${type}잠재력각인비서 성공! ${slotNames[chosen]}의 각인을 복사했습니다.`);
+  }
+
+  function applyTranscend() {
+  if (selectedSlot === null) return updateLog("슬롯을 먼저 선택하세요.");
+  const state = slotStates[selectedSlot];
+
+  if (!state.flat || !state.add) return updateLog("앞각과 뒷각이 모두 있어야 초월강화가 가능합니다.");
+  if (state.add < state.flat * 0.3) return updateLog("뒷각 수치가 앞각의 30% 이상이어야 초월강화가 가능합니다.");
+
+  if (!state.transcendLevel) state.transcendLevel = 0;
+  if (state.transcendLevel >= 3) return updateLog("초월강화는 슬롯당 최대 3강까지 가능합니다.");
+
+  // 💸 여기 추가!
+  if (!spend(priceTable.transcend)) return;
+
+  const chances = [
+    { rate: 60, ratio: 0.10 },
+    { rate: 20, ratio: 0.20 },
+    { rate: 12, ratio: 0.30 },
+    { rate: 6,  ratio: 0.40 },
+    { rate: 2,  ratio: 0.50 }
+  ];
+
+  const rand = Math.random() * 100;
+  let sum = 0;
+  let chosen = chances[chances.length - 1];
+  for (let i = 0; i < chances.length; i++) {
+    sum += chances[i].rate;
+    if (rand <= sum) {
+      chosen = chances[i];
+      break;
+    }
+  }
+
+  // 앞각의 X% 계산
+  let increment = state.flat * chosen.ratio;
+  increment = increment < 0.01 ? 0.01 : Math.round(increment * 100) / 100; // 최소 0.01%, 반올림
+
+  // 누적 증가
+  state.add += increment;
+  state.transcendLevel++;
+
+  updateSlotDisplay(selectedSlot);
+  updateLog(`${slotNames[selectedSlot]} 슬롯 초월강화 +${state.transcendLevel}강 성공! (앞각의 ${Math.round(chosen.ratio * 100)}%인 +${increment.toFixed(2)}% 누적됨)`);
+  updateUsageSummary();
+  showEffect("transcend");
+}
+
+
+
+
+  function getFlatValue(type) {
+  const table = {
+    "신": [
+      { p: 68.00, v: 0.70 },
+      { p: 21.00, v: 1.70 },
+      { p: 8.00, v: 2.80 },
+      { p: 3.00, v: 3.70 },
+    ],
+    "보물": [
+      { p: 55.00, v: 0.70 },
+      { p: 24.00, v: 1.50 },
+      { p: 12.00, v: 2.20 },
+      { p: 7.00,  v: 3.00 },
+      { p: 2.00,  v: 3.80 },
+    ],
+    "전설": [
+      { p: 40.00, v: 0.90 },
+      { p: 29.00, v: 1.70 },
+      { p: 20.00, v: 2.40 },
+      { p: 9.50,  v: 3.20 },
+      { p: 1.50,  v: 4.00 },
+    ]
+  };
+
+  const rand = Math.random() * 100;
+  let sum = 0;
+  for (let i = 0; i < table[type].length; i++) {
+    sum += table[type][i].p;
+    if (rand <= sum) return table[type][i].v; // 숫자 그대로 반환!!!
+  }
+  return table[type][table[type].length - 1].v;
+}
+
+
+function getAddValue(type, flatValue) {
+  const table = {
+    "전설": [
+      { rate: 40.0, ratio: 0.10 },
+      { rate: 40.0, ratio: 0.20 },
+      { rate: 15.0, ratio: 0.25 },
+      { rate: 5.0,  ratio: 0.50 },
+    ],
+    "보물": [
+      { rate: 60.0, ratio: 0.10 },
+      { rate: 30.0, ratio: 0.20 },
+      { rate: 7.0,  ratio: 0.25 },
+      { rate: 3.0,  ratio: 0.50 },
+    ],
+    "도깨비": [
+      { rate: 80.0, ratio: 0.10 },
+      { rate: 15.0, ratio: 0.20 },
+      { rate: 4.0,  ratio: 0.25 },
+      { rate: 1.0,  ratio: 0.50 },
+    ]
+  };
+
+  const list = table[type];
+  const rand = Math.random() * 100;
+  let sum = 0;
+  for (let i = 0; i < list.length; i++) {
+    sum += list[i].rate;
+    if (rand <= sum) return roundToOneDecimal(flatValue * list[i].ratio);
+  }
+  return roundToOneDecimal(flatValue * list[list.length - 1].ratio);
+}
+
+// 초기 소지금
+let gold = 20000000000; // 200억 전
+const initialGold = gold;
+
+const priceTable = {
+  flat: { "신": 3600000, "보물": 6000000, "전설": 25000000 },
+  add:  { "도깨비": 6400000, "보물": 18000000, "전설": 35000000 },
+  hwangryong: { "일반": 80000000, "희귀": 15000000 },
+  transcend: 700000000
+};
+
+// 💸 소지금 차감 함수
+function spend(amount) {
+  if (gold < amount) {
+    updateLog("💸 소지금이 부족합니다!");
+    return false;
+  }
+  gold -= amount;
+  updateGoldUI();
+  return true;
+}
+
+// 💸 상단 소지금 표시 갱신
+function updateGoldUI() {
+  const used = initialGold - gold;
+  const cash = Math.round((used / 100000000) * 45000);
+  document.getElementById("goldStatus").innerText =
+    `💰 사용 금전: ${used.toLocaleString()}전 | 💴 환산: 약 ${cash.toLocaleString()}원 | 남은 금전: ${gold.toLocaleString()}전`;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  switchTab('flat');
+  updateUsageSummary();
+  updateGoldUI();
+});
+
+
+</script>
+</body>
+</html>
