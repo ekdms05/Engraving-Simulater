@@ -407,16 +407,11 @@ function applyFlat(type) {
   // ✅ 황룡 슬롯은 앞각 비서 사용 금지
   if (selectedSlot === 0) return updateLog("황룡 슬롯에는 앞각 비서를 사용할 수 없습니다.");
 
-  // // ✅ 뒷각이 이미 박혀 있으면 앞각 변경 금지
-  // if (state.add !== undefined) {
-  //   return updateLog("뒷각이 이미 각인되어 있어 앞각을 변경할 수 없습니다.");
-  // }
-
+  const current = slotStates[selectedSlot].flat;
   if (current !== null && current >= 3.70) {
     return updateLog("앞각 수치가 최대입니다. 더 이상 각인할 수 없습니다.");
   }
 
-  const current = slotStates[selectedSlot].flat;
   if (!spend(priceTable.flat[type])) return;
 
   const flat = getFlatValue(type);
