@@ -1,6 +1,6 @@
 # 🎴 각인 시뮬레이터 (Engraving Simulator)
 
-![Uploading Honeycam 2025-04-12 15-16-24.gif…]()
+![Honeycam 2025-04-12 15-16-24](https://github.com/user-attachments/assets/764c5661-fc43-42a0-883d-2705dd0db1db)
 
 ## 📌 소개
 도깨비방어구관통 시스템을 웹으로 시뮬레이션할 수 있는 도구입니다.  
