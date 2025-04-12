@@ -859,11 +859,11 @@ function applyTranscend() {
   const state = slotStates[selectedSlot];
 
   if (!state.flat || !state.add) return updateLog("앞각과 뒷각이 모두 있어야 초월강화가 가능합니다.");
-  if (slotStates[0].flat === null) return updateLog("황룡 슬롯에 각인이 있어야 초월강화를 사용할 수 있습니다.");
+  if (state.add < state.flat * 0.3) return updateLog("뒷각 수치가 앞각의 30% 이상이어야 초월강화가 가능합니다.");
+  if (selectedSlot === 0 && (!state.flat || !state.statType)) return updateLog("황룡 슬롯은 먼저 복사된 각인이 있어야 초월강화를 할 수 있습니다.");
 
   if (!state.transcendLevel) state.transcendLevel = 0;
   if (state.transcendLevel >= 3) return updateLog("초월강화는 슬롯당 최대 3강까지 가능합니다.");
-
   if (!spend(priceTable.transcend)) return;
 
   const chances = [
@@ -885,18 +885,46 @@ function applyTranscend() {
     }
   }
 
-  let increment = state.flat * chosen.ratio;
-  increment = increment < 0.01 ? 0.01 : Math.round(increment * 100) / 100;
+  const flatValue = state.flat;
+  const ratio = chosen.ratio;
+  const stat = state.statType;
 
+  let increment = 0;
+
+  // ✅ 스탯별 단위 기반 초월 증가 계산
+  const unitTable = {
+    "방어도무시": 0.32,
+    "방어도": 0.32,
+    "공격력증가": 0.08,
+    "피해흡수": 0.08,
+    "마력증강": 0.08,
+    "직타저항": 0.08,
+    "피해흡수무시": 0.06
+  };
+
+  if (stat === "방어구관통") {
+    increment = roundToOneDecimal(flatValue * ratio);
+  } else {
+    const unit = unitTable[stat] || 0.1;
+    const scaled = (flatValue / unit) * ratio;
+    const rounded = Math.round(scaled);
+    increment = +(rounded * unit).toFixed(2);
+  }
+
+  increment = Math.max(0.01, increment); // 최소값
+
+  // ✅ 증가 반영
   state.add += increment;
   state.transcendLevel++;
 
   updateSlotDisplay(selectedSlot);
-  updateLog(`${slotNames[selectedSlot]} 슬롯 초월강화 +${state.transcendLevel}강 성공! (앞각의 ${Math.round(chosen.ratio * 100)}%인 +${increment.toFixed(2)}% 누적됨)`);
+  updateLog(`${slotNames[selectedSlot]} 슬롯 초월강화 +${state.transcendLevel}강 성공! (+${increment.toFixed(2)}%)`);
   updateUsageSummary();
   showEffect("transcend");
   updateTotalStatUI();
 }
+
+
 
 
 
@@ -1269,9 +1297,28 @@ function resetSelectedEngraving() {
 }
 
 function clearLog() {
+  // 로그만 초기화
   document.getElementById("log").innerText = "📭 로그가 초기화되었습니다.";
   document.getElementById("usageSummary").innerText = "";
-  document.getElementById("usageTable").innerHTML = "";
+  
+  // 총 사용량 초기화
+  totalUsage["신"] = 0;
+  totalUsage["보물"] = 0;
+  totalUsage["전설"] = 0;
+
+  for (let i = 0; i < 5; i++) {
+    slotUsage[i]["신"] = 0;
+    slotUsage[i]["보물"] = 0;
+    slotUsage[i]["전설"] = 0;
+  }
+
+  hwangryongUsage["일반"] = 0;
+  hwangryongUsage["희귀"] = 0;
+
+  hwangryongSlotUsage["일반"] = 0;
+  hwangryongSlotUsage["희귀"] = 0;
+
+  // 테이블 다시 그리기
   updateUsageSummary();
 }
 
