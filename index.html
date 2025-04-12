@@ -468,6 +468,7 @@ white-space: pre-line;
 <div style="margin-top: 12px; text-align: center;">
   <button class="reset-btn" onclick="resetSelectedEngraving()">🧹 선택 초기화</button>
   <button class="reset-btn" onclick="resetAllEngravings()">🧼 전체 초기화</button>
+  <button class="reset-btn" onclick="clearLog()">🗑 로그 초기화</button>
 </div>
 
 <!-- 사용량 요약 테이블 표시 -->
@@ -1267,7 +1268,12 @@ function resetSelectedEngraving() {
   updateTotalStatUI();
 }
 
-
+function clearLog() {
+  document.getElementById("log").innerText = "📭 로그가 초기화되었습니다.";
+  document.getElementById("usageSummary").innerText = "";
+  document.getElementById("usageTable").innerHTML = "";
+  updateUsageSummary();
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   renderStatTabs();     // 탭 생성
