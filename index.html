@@ -133,6 +133,43 @@
       z-index: 10;
       pointer-events: none; /* 클릭 막기 */
     }
+
+    .stat-tabs {
+      width: 663px;
+      margin: 8px auto 0;
+      text-align: center;
+    }
+    .stat-tabs button {
+      margin: 2px;
+      padding: 6px 12px;
+      background: #222;
+      color: #fff;
+      border: 1px solid #555;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .stat-tabs button.active {
+      background: #4caf50;
+      font-weight: bold;
+    }
+
+    .stat-type-btn {
+      background: #333;
+      color: #fff;
+      border: 1px solid #777;
+      padding: 6px 10px;
+      margin: 2px;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .stat-type-btn.selected {
+      background: #ffcc66;
+      color: #000;
+      font-weight: bold;
+    }
             
   </style>
 </head>
@@ -170,7 +207,7 @@ padding: 6px;
 white-space: pre-line;
 "></div>
 
-<!-- ✅ 총 방어구관통 표시 -->
+<!-- ✅ 총 스탯 수치 표시 영역 (JS에서 동적으로 삽입) -->
 <div id="totalPenetrationDisplay" style="
   width: 663px;
   margin: 8px auto;
@@ -183,8 +220,26 @@ white-space: pre-line;
   border-radius: 6px;
   padding: 6px;
 ">
-  🛡️⚔️ 총 방어구관통: 계산중...
+  총 스탯 수치: 계산중...
 </div>
+
+<!-- 🔘 스탯 선택 탭 -->
+<div class="stat-tabs" id="statTabContainer">
+</div>
+
+<!-- 🎯 스탯 선택 탭
+<div id="statTypeSelector" style="
+  width: 663px;
+  margin: 0 auto 8px;
+  text-align: center;
+">
+  <button onclick="selectStatType('방어구관통')" class="stat-type-btn selected">방어구관통</button>
+  <button onclick="selectStatType('방어도무시')" class="stat-type-btn">방어도무시</button>
+  <button onclick="selectStatType('방어도')" class="stat-type-btn">방어도</button>
+  <button onclick="selectStatType('직타저항')" class="stat-type-btn">직타저항</button>
+  <button onclick="selectStatType('피해흡수')" class="stat-type-btn">피해흡수</button>
+  <button onclick="selectStatType('피해흡수무시')" class="stat-type-btn">피해흡수무시</button>
+</div> -->
 
 <!-- 💸 가격 설정 토글 버튼 -->
 <div style="width: 663px; margin: 0 auto; text-align: center;">
@@ -328,9 +383,9 @@ white-space: pre-line;
     <!-- 뒷각 -->
     <div id="tab-add" class="engraving-tab" style="display:none;">
       <!-- 신수 뒷각 추가 -->
-      <button onclick="applyAdd('[신수]1.8')">[신수]고급방어구관통추가각인비서(+1.8%)</button>
+      <!-- <button onclick="applyAdd('[신수]1.8')">[신수]고급방어구관통추가각인비서(+1.8%)</button>
       <button onclick="applyAdd('[신수]1.5')">[신수]고급방어구관통추가각인비서(+1.5%)</button>
-      <button onclick="applyAdd('[신수]1.0')">[신수]고급방어구관통추가각인비서(+1.0%)</button>
+      <button onclick="applyAdd('[신수]1.0')">[신수]고급방어구관통추가각인비서(+1.0%)</button> -->
       <button onclick="applyAdd('도깨비')">도깨비추가각인비서</button>
       <button onclick="applyAdd('보물')">보물도깨비추가각인비서</button>
       <button onclick="applyAdd('전설')">전설도깨비추가각인비서</button>
@@ -458,39 +513,48 @@ function switchTab(tab) {
   return Math.round(value * 10) / 10;
 }
 
-function applyFlat(type) {
+function applyFlatUnified(tier) {
   if (selectedSlot === null) return updateLog("먼저 슬롯을 선택하세요.");
-
-  if (selectedSlot === 0) return updateLog("황룡 슬롯에는 앞각 비서를 사용할 수 없습니다.");
+  if (selectedSlot === 0) return updateLog("황룡 슬롯에는 사용할 수 없습니다.");
 
   const state = slotStates[selectedSlot];
 
-  // ✅ 뒷각이 이미 박혀 있으면 앞각 변경 금지
-  if (state.add !== undefined) {
-    return updateLog("뒷각이 이미 각인되어 있어 앞각을 변경할 수 없습니다.");
+  if (state.add !== undefined) return updateLog("뒷각이 이미 있어 앞각 변경이 불가합니다.");
+
+  const config = STAT_CONFIG[currentStat].flat[tier];
+  const maxValue = Math.max(...config.values);
+
+  if (state.statType === currentStat && state.flat === maxValue) {
+    return updateLog(`🛡️ 이미 ${tier} ${currentStat} 최대치(${maxValue}%)가 각인되어 있습니다.`);
   }
 
-  const current = state.flat;
-  if (current !== null && current >= 3.70) {
-    return updateLog("앞각 수치가 최대입니다. 더 이상 각인할 수 없습니다.");
+  const rand = Math.random() * 100;
+  let sum = 0;
+  let result = config.values[config.values.length - 1];
+
+  for (let i = 0; i < config.values.length; i++) {
+    sum += config.probs[i];
+    if (rand <= sum) {
+      result = config.values[i];
+      break;
+    }
   }
 
-  if (!spend(priceTable.flat[type])) return;
+  if (!spend(priceTable.flat[tier])) return;
 
-  const flat = getFlatValue(type);
-  state.flat = flat;
+  state.flat = result;
+  state.statType = currentStat;
 
-  totalUsage[type]++;
-  slotUsage[selectedSlot][type]++;
+  // ✅ 앞각 사용량 기록
+  totalUsage[tier]++;
+  slotUsage[selectedSlot][tier]++;
 
   updateSlotDisplay(selectedSlot);
-  updateLog(`${slotNames[selectedSlot]} 슬롯에 ${type} 비서로 앞각 +${flat}% 적용됨`);
+  updateLog(`✅ ${slotNames[selectedSlot]} 슬롯에 ${tier} ${currentStat} 앞각 +${result}% 적용됨`);
   updateUsageSummary();
   showEffect("flat");
-  updateTotalPenetrationUI();
+  updateTotalStatUI();
 }
-
-
 
 
 function applyAdd(type) {
@@ -502,7 +566,12 @@ function applyAdd(type) {
 
   const currentAdd = state.add ?? 0;
 
-  // 신수 최대각 방지
+  // ✅ 최대치 제한: 앞각의 50% 이상이면 불가
+  if (state.add !== undefined && currentAdd >= state.flat * 0.5) {
+    return updateLog("⚠️ 뒷각 수치가 이미 앞각의 50% 이상입니다. 더 이상 각인할 수 없습니다.");
+  }
+
+  // ✅ 신수 비서는 1.8 이상이면 제한
   if (["[신수]1.8", "[신수]1.5", "[신수]1.0"].includes(type) && currentAdd >= 1.8) {
     return updateLog("이미 최대 수치의 뒷각이 각인되어 있어 신수추각 비서를 사용할 수 없습니다.");
   }
@@ -524,7 +593,6 @@ function applyAdd(type) {
     success = Math.random() < successRate;
     addValue = parseFloat(type.match(/\d\.\d/)[0]);
 
-    // ✅ 실패해도 카운트
     totalAddUsage[type] = (totalAddUsage[type] || 0) + 1;
     slotAddUsage[selectedSlot][type] = (slotAddUsage[selectedSlot][type] || 0) + 1;
 
@@ -545,8 +613,9 @@ function applyAdd(type) {
   updateLog(`✅ ${slotNames[selectedSlot]} 슬롯에 ${type} 성공! 뒷각 +${addValue}% 적용됨`);
   updateUsageSummary();
   showEffect("add");
-  updateTotalPenetrationUI();
+  updateTotalStatUI();
 }
+
 
 
 
@@ -565,30 +634,49 @@ function applyAdd(type) {
   return '#ffffff';
 }
 
+// const STAT_CONFIG = {
+//   방어구관통: { displayName: "방어구관통", color: "#ffff00" },
+//   방어도무시: { displayName: "방어도무시", color: "#ff9999" },
+//   방어도: { displayName: "방어도", color: "#99ccff" },
+//   피해흡수: { displayName: "피해흡수", color: "#ccffcc" },
+//   피해흡수무시: { displayName: "피해흡수무시", color: "#ffcc99" },
+//   공격력증가: { displayName: "공격력증가", color: "#ffcc00" },
+//   직타저항: { displayName: "직타저항", color: "#ddaaff" },
+//   마력증강: { displayName: "마력증강", color: "#aaaaff" },
+// };
+
+
 function updateSlotDisplay(index) {
   const state = slotStates[index];
   const textEl = document.getElementById(`text${index}`);
 
-  if (state.flat !== null && state.add !== undefined) {
-    const flat = state.flat.toFixed(2);
-    const add = state.add.toFixed(1);
-
-    const level = state.transcendLevel || 0;
-    const color = level > 0 ? getTranscendAddColor(level) : '#ffff00';
-
-    let text = `　　방어구관통\n+${flat}%[x] <span style="color:${color}">+${add}%[x]</span>`;
-
-    if (level > 0) {
-      text += `<br><span style="color:${color}">(　초월강화 +${level}강　)</span>`;
-    }
-
-    textEl.innerHTML = text;
-  } else if (state.flat !== null) {
-    textEl.innerText = `　　방어구관통\n+${state.flat.toFixed(2)}%[x]`;
-  } else {
+  if (!state || !state.statType) {
     textEl.innerText = `　　　봉인된 문양`;
+    return;
   }
+
+  const flat = state.flat?.toFixed(2);
+  const add = state.add?.toFixed(1);
+  const transcend = state.transcendLevel || 0;
+
+  const defaultColor = "#ffff00";
+
+  let html = `　　${state.statType}<br><span style="color:${defaultColor}">+${flat}%[x]</span>`;
+
+  if (add !== undefined && add !== null) {
+    const addColor = transcend > 0 ? getTranscendAddColor(transcend) : defaultColor;
+    html += ` <span style="color:${addColor}">+${add}%[x]</span>`;
+  }
+
+  if (transcend > 0) {
+    html += `<br><span style="color:#ffffff">(　초월강화 +${transcend}강　)</span>`;
+  }
+
+  textEl.innerHTML = html;
 }
+
+
+
 
 function showEffect(type) {
   const effect = document.createElement('img');
@@ -691,10 +779,11 @@ function applyHwangryongCopy(type) {
 
   slotStates[0].flat = source.flat;
   slotStates[0].add = source.add ?? undefined;
+  slotStates[0].statType = source.statType; // << 이게 빠져 있었던 문제
 
   updateSlotDisplay(0);
   updateLog(`[황룡] ${type}잠재력각인비서 성공! ${slotNames[chosen]}의 각인을 복사했습니다.`);
-  updateTotalPenetrationUI();
+  updateTotalStatUI();
 }
 
 
@@ -742,7 +831,7 @@ function applyHwangryongCopy(type) {
   updateLog(`${slotNames[selectedSlot]} 슬롯 초월강화 +${state.transcendLevel}강 성공! (앞각의 ${Math.round(chosen.ratio * 100)}%인 +${increment.toFixed(2)}% 누적됨)`);
   updateUsageSummary();
   showEffect("transcend");
-  updateTotalPenetrationUI();
+  updateTotalStatUI();
 }
 
 
@@ -908,7 +997,7 @@ document.getElementById("kakaoShareBtn").addEventListener("click", async () => {
 
       alert("📸 이미지가 클립보드에 복사되었습니다!\n카카오톡에 붙여넣기 하세요!");
 
-      const message = `🛡️⚔️ 방관 ${calculateTotalPenetration()}각인을 만들었어요!\n` +
+      const message = `🛡️⚔️ 방관 ${calculateTotalStat()}각인을 만들었어요!\n` +
         "https://ekdms05.github.io/Engraving-Simulator/\n각인시뮬레이터 - 전쿠린@연";
       await navigator.clipboard.writeText(message);
     });
@@ -919,26 +1008,158 @@ document.getElementById("kakaoShareBtn").addEventListener("click", async () => {
   }
 });
 
+const STAT_CONFIG = {
+  "방어도무시": {
+    flat: {
+      신: { values: [0.32, 0.64, 0.96, 1.92], probs: [68, 21, 8, 3] },
+      보물: { values: [0.32, 0.64, 0.96, 1.60, 2.24], probs: [55, 24, 12, 7, 2] },
+      전설: { values: [0.64, 0.96, 1.28, 1.92, 2.56], probs: [40, 29, 20, 9.5, 1.5] }
+    },
+    displayName: "방어도무시",
+    color: "#ffdd66"
+  },
+  "방어구관통": {
+    flat: {
+      신: { values: [0.70, 1.70, 2.80, 3.70], probs: [68, 21, 8, 3] },
+      보물: { values: [0.70, 1.50, 2.20, 3.00, 3.80], probs: [55, 24, 12, 7, 2] },
+      전설: { values: [0.90, 1.70, 2.40, 3.20, 4.00], probs: [40, 29, 20, 9.5, 1.5] }
+    },
+    displayName: "방어구관통",
+    color: "#ccffcc"
+  },
+  "공격력증가": {
+    flat: {
+      신:    { values: [0.64, 2.16, 3.36, 4.80], probs: [68, 21, 8, 3] },
+      보물:  { values: [0.64, 1.20, 2.56, 3.84, 5.20], probs: [55, 24, 12, 7, 2] },
+      전설:  { values: [0.88, 1.84, 2.80, 4.08, 5.44], probs: [40, 29, 20, 9.5, 1.5] }
+    },
+    displayName: "공격력증가",
+    color: "#ffcc00"
+  },
+  "피해흡수": {
+    flat: {
+      신: { values: [0.64, 2.16, 3.36, 4.80], probs: [68, 21, 8, 3] },
+      보물: { values: [0.64, 1.20, 2.56, 3.84, 5.20], probs: [55, 24, 12, 7, 2] },
+      전설: { values: [0.88, 1.84, 2.80, 4.08, 5.44], probs: [40, 29, 20, 9.5, 1.5] }
+    },
+    displayName: "피해흡수",
+    color: "#88e0ff"
+  },
+  "마력증강": {
+    flat: {
+      신:    { values: [0.56, 1.36, 2.24, 2.96], probs: [68, 21, 8, 3] },
+      보물:  { values: [0.56, 1.20, 1.76, 2.40, 3.04], probs: [55, 24, 12, 7, 2] },
+      전설:  { values: [0.72, 1.36, 1.92, 2.56, 3.20], probs: [40, 29, 20, 9.5, 1.5] }
+    },
+    displayName: "마력증강",
+    color: "#aaaaff"
+  },
+  "방어도": {
+    flat: {
+      신:    { values: [0.32, 0.64, 1.28, 2.24], probs: [68, 21, 8, 3] },
+      보물:  { values: [0.32, 0.64, 0.96, 1.60, 2.56], probs: [55, 24, 12, 7, 2] },
+      전설:  { values: [0.64, 0.96, 1.28, 1.92, 2.88], probs: [40, 29, 20, 9.5, 1.5] }
+    },
+    displayName: "방어도",
+    color: "#99ccff"
+  },
+  "직타저항": {
+    flat: {
+      신:    { values: [0.64, 2.16, 3.36, 4.80], probs: [68, 21, 8, 3] },
+      보물:  { values: [0.64, 1.20, 2.56, 3.84, 5.20], probs: [55, 24, 12, 7, 2] },
+      전설:  { values: [0.88, 1.84, 2.80, 4.08, 5.44], probs: [40, 29, 20, 9.5, 1.5] }
+    },
+    displayName: "직타저항",
+    color: "#ddaaff"
+  },
+  "피해흡수무시": {
+    flat: {
+      신: { values: [0.66, 2.16, 3.36, 4.80], probs: [68, 21, 8, 3] },
+      보물: { values: [0.66, 1.20, 2.58, 3.84, 5.16], probs: [55, 24, 12, 7, 2] },
+      전설: { values: [0.90, 1.86, 2.82, 4.08, 5.40], probs: [40, 29, 20, 9.5, 1.5] }
+    },
+    displayName: "피해흡수무시",
+    color: "#ffaacc"
+  }
+};
 
-function calculateTotalPenetration() {
+// 현재 선택된 스탯
+let currentStat = "방어구관통";
+
+function renderStatTabs() {
+  const container = document.getElementById("statTabContainer");
+  container.innerHTML = ""; // 초기화
+  Object.keys(STAT_CONFIG).forEach(stat => {
+    const btn = document.createElement("button");
+    btn.innerText = STAT_CONFIG[stat].displayName;
+    btn.className = stat === currentStat ? "active" : "";
+    btn.onclick = () => {
+      currentStat = stat;
+      renderStatTabs();      // 다시 그리기
+      renderFlatButtons();   // 앞각 버튼 다시 그리기
+    };
+    container.appendChild(btn);
+  });
+}
+
+function renderFlatButtons() {
+  const tab = document.getElementById("tab-flat");
+  tab.innerHTML = ""; // 초기화
+
+  ["신", "보물", "전설"].forEach(tier => {
+    const btn = document.createElement("button");
+    const name = `${tier} ${currentStat}`;
+    btn.innerText = `${tier} ${STAT_CONFIG[currentStat].displayName} 앞각`;
+    btn.onclick = () => applyFlatUnified(tier);
+    tab.appendChild(btn);
+  });
+}
+
+function selectStatType(stat) {
+  selectedStatType = stat;
+
+  // 버튼 UI 반영
+  document.querySelectorAll('.stat-type-btn').forEach(btn => {
+    btn.classList.remove('selected');
+    if (btn.innerText === stat) btn.classList.add('selected');
+  });
+
+  updateLog(`📌 선택된 스탯: ${stat}`);
+}
+
+function calculateTotalStat() {
   let total = 0;
   for (const state of slotStates) {
-    total += (state.flat ?? 0) + (state.add ?? 0);
+    if (state.statType === currentStat) {
+      total += (state.flat ?? 0) + (state.add ?? 0);
+    }
   }
-  return Math.round(total * 10 * 10) / 10; // 1자리 반올림
+  return total;
 }
 
-function updateTotalPenetrationUI() {
-  const total = calculateTotalPenetration();
-  document.getElementById("totalPenetrationDisplay").innerText =
-    `🛡️⚔️ 총 방어구관통 수치: ${total.toLocaleString()}`;
+function updateTotalStatUI() {
+  const total = calculateTotalStat();
+  const { displayName, color } = STAT_CONFIG[currentStat];
+  const el = document.getElementById("totalPenetrationDisplay");
+  el.innerText = `🛡️⚔️ 총 ${displayName}: ${total.toFixed(2)}%`;
+  el.style.color = color; // ✅ 스탯별 색상 반영
 }
 
+
+function switchStatTab(stat) {
+  currentStat = stat;
+  renderEngravingTabs(); // 비서 버튼 재생성
+  updateSlotDisplayAll(); // 슬롯 표시 업데이트
+  updateTotalStatUI(); // 상단 총 수치 갱신
+}
 
 document.addEventListener('DOMContentLoaded', () => {
+  renderStatTabs();     // 탭 생성
+  renderFlatButtons();  // 버튼 생성
   switchTab('flat');
   updateUsageSummary();
   updateGoldUI();
+  updateTotalStatUI();
   document.querySelectorAll('#priceConfig input').forEach(input => formatWithComma(input));
 });
 
