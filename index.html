@@ -686,8 +686,9 @@ function updateSlotDisplay(index) {
     return;
   }
 
-  const flat = state.flat?.toFixed(2);
-  const add = state.add?.toFixed(1);
+  const isFlat1 = state.statType === "방어구관통";
+  const flat = state.flat?.toFixed(isFlat1 ? 1 : 2);
+  const add = state.add?.toFixed(isFlat1 ? 1 : 2);
   const transcend = state.transcendLevel || 0;
 
   const defaultColor = "#ffff00";
@@ -705,6 +706,7 @@ function updateSlotDisplay(index) {
 
   textEl.innerHTML = html;
 }
+
 
 
 
@@ -816,17 +818,16 @@ function applyHwangryongCopy(type) {
 }
 
 
-  function applyTranscend() {
+function applyTranscend() {
   if (selectedSlot === null) return updateLog("슬롯을 먼저 선택하세요.");
   const state = slotStates[selectedSlot];
 
   if (!state.flat || !state.add) return updateLog("앞각과 뒷각이 모두 있어야 초월강화가 가능합니다.");
-  if (state.add < state.flat * 0.3) return updateLog("뒷각 수치가 앞각의 30% 이상이어야 초월강화가 가능합니다.");
+  if (slotStates[0].flat === null) return updateLog("황룡 슬롯에 각인이 있어야 초월강화를 사용할 수 있습니다.");
 
   if (!state.transcendLevel) state.transcendLevel = 0;
   if (state.transcendLevel >= 3) return updateLog("초월강화는 슬롯당 최대 3강까지 가능합니다.");
 
-  // 💸 여기 추가!
   if (!spend(priceTable.transcend)) return;
 
   const chances = [
@@ -848,11 +849,9 @@ function applyHwangryongCopy(type) {
     }
   }
 
-  // 앞각의 X% 계산
   let increment = state.flat * chosen.ratio;
-  increment = increment < 0.01 ? 0.01 : Math.round(increment * 100) / 100; // 최소 0.01%, 반올림
+  increment = increment < 0.01 ? 0.01 : Math.round(increment * 100) / 100;
 
-  // 누적 증가
   state.add += increment;
   state.transcendLevel++;
 
@@ -862,6 +861,7 @@ function applyHwangryongCopy(type) {
   showEffect("transcend");
   updateTotalStatUI();
 }
+
 
 
 
@@ -922,15 +922,41 @@ function getAddValue(type, flatValue) {
     ]
   };
 
+  const baseUnit = {
+    "방어도무시": 0.32,
+    "방어도": 0.32,
+    "공격력증가": 0.08,
+    "피해흡수": 0.08,
+    "마력증강": 0.08,
+    "직타저항": 0.08,
+    "피해흡수무시": 0.06
+  };
+
   const list = table[type];
   const rand = Math.random() * 100;
   let sum = 0;
+  let chosenRatio = list[list.length - 1].ratio;
+
   for (let i = 0; i < list.length; i++) {
     sum += list[i].rate;
-    if (rand <= sum) return roundToOneDecimal(flatValue * list[i].ratio);
+    if (rand <= sum) {
+      chosenRatio = list[i].ratio;
+      break;
+    }
   }
-  return roundToOneDecimal(flatValue * list[list.length - 1].ratio);
+
+  if (currentStat === "방어구관통") {
+    return roundToOneDecimal(flatValue * chosenRatio); // 기존 방식
+  }
+
+  const unit = baseUnit[currentStat];
+  if (!unit) return roundToOneDecimal(flatValue * chosenRatio); // fallback
+
+  const result = Math.round((flatValue / unit) * chosenRatio) * unit;
+  return result
 }
+
+
 
 // 초기 소지금
 let gold = 50000000000; // 500억 전
