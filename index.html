@@ -173,27 +173,27 @@ white-space: pre-line;
     <div style="flex: 1; padding-right: 20px; border-right: 1px solid #555;">
       <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
         <span>🛡️ 신 앞각:</span>
-        <input type="number" id="priceFlat신" value="3600000" style="width: 100px; text-align: right;">
+        <input type="text" id="priceFlat신" value="3600000" oninput="formatWithComma(this)" style="width: 100px; text-align: right;">
       </div>
       <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
         <span>🛡️ 보물 앞각:</span>
-        <input type="number" id="priceFlat보물" value="6000000" style="width: 100px; text-align: right;">
+        <input type="text" id="priceFlat보물" value="6000000" oninput="formatWithComma(this)" style="width: 100px; text-align: right;">
       </div>
       <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
         <span>🛡️ 전설 앞각:</span>
-        <input type="number" id="priceFlat전설" value="25000000" style="width: 100px; text-align: right;">
+        <input type="text" id="priceFlat전설" value="25000000" oninput="formatWithComma(this)" style="width: 100px; text-align: right;">
       </div>
       <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
         <span>⚔️ 도깨비 뒷각:</span>
-        <input type="number" id="priceAdd도깨비" value="6400000" style="width: 100px; text-align: right;">
+        <input type="text" id="priceAdd도깨비" value="6400000" oninput="formatWithComma(this)" style="width: 100px; text-align: right;">
       </div>
       <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
         <span>⚔️ 보물 뒷각:</span>
-        <input type="number" id="priceAdd보물" value="18000000" style="width: 100px; text-align: right;">
+        <input type="text" id="priceAdd보물" value="18000000" oninput="formatWithComma(this)" style="width: 100px; text-align: right;">
       </div>
       <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
         <span>⚔️ 전설 뒷각:</span>
-        <input type="number" id="priceAdd전설" value="35000000" style="width: 100px; text-align: right;">
+        <input type="text" id="priceAdd전설" value="35000000" oninput="formatWithComma(this)" style="width: 100px; text-align: right;">
       </div>
     </div>
 
@@ -201,27 +201,27 @@ white-space: pre-line;
     <div style="flex: 1; padding-left: 20px;">
       <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
         <span>🐉 [신수] 1.8%:</span>
-        <input type="number" id="priceAdd[신수]1.8" value="4600000" style="width: 100px; text-align: right;">
+        <input type="text" id="priceAdd[신수]1.8" value="4600000" oninput="formatWithComma(this)" style="width: 100px; text-align: right;">
       </div>
       <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
         <span>🐉 [신수] 1.5%:</span>
-        <input type="number" id="priceAdd[신수]1.5" value="6000000" style="width: 100px; text-align: right;">
+        <input type="text" id="priceAdd[신수]1.5" value="6000000" oninput="formatWithComma(this)" style="width: 100px; text-align: right;">
       </div>
       <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
         <span>🐉 [신수] 1.0%:</span>
-        <input type="number" id="priceAdd[신수]1.0" value="3500000" style="width: 100px; text-align: right;">
+        <input type="text" id="priceAdd[신수]1.0" value="3500000" oninput="formatWithComma(this)" style="width: 100px; text-align: right;">
       </div>
       <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
         <span>🐲 황룡 일반:</span>
-        <input type="number" id="priceHwang일반" value="80000000" style="width: 100px; text-align: right;">
+        <input type="text" id="priceHwang일반" value="80000000" oninput="formatWithComma(this)" style="width: 100px; text-align: right;">
       </div>
       <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
         <span>🐲 황룡 희귀:</span>
-        <input type="number" id="priceHwang희귀" value="15000000" style="width: 100px; text-align: right;">
+        <input type="text" id="priceHwang희귀" value="15000000" oninput="formatWithComma(this)" style="width: 100px; text-align: right;">
       </div>
       <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
         <span>✨ 초월:</span>
-        <input type="number" id="priceTranscend" value="700000000" style="width: 100px; text-align: right;">
+        <input type="text" id="priceTranscend" value="700000000" oninput="formatWithComma(this)" style="width: 100px; text-align: right;">
       </div>
     </div>
   </div>
@@ -590,46 +590,47 @@ function showEffect(type) {
 
 
 
-  function applyHwangryongCopy(type) {
-    if (selectedSlot !== 0) return updateLog("황룡 슬롯에서만 사용할 수 있습니다.");
+function applyHwangryongCopy(type) {
+  if (selectedSlot !== 0) return updateLog("황룡 슬롯에서만 사용할 수 있습니다.");
 
-    const state = slotStates[0];
+  const state = slotStates[0];
 
-    // 이미 잠재력이 박혀 있으면 막기
-    if (state.flat !== null) {
-      return updateLog("황룡 슬롯에 이미 잠재력이 각인되어 있습니다.");
-    }
-
-    const successRate = type === '희귀' ? 5 : 3;
-    const success = Math.random() * 100 < successRate;
-
-    hwangryongUsage[type]++;
-    hwangryongSlotUsage[type]++;
-
-    updateUsageSummary();
-
-    if (!success) {
-      updateLog(`[황룡] ${type}잠재력각인비서 실패!`);
-
-      return;
-    }
-
-    const candidates = [1, 2, 3, 4]; // 주작~현무
-    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-    const source = slotStates[chosen];
-
-    if (!source.flat) {
-      updateLog(`[황룡] 선택된 슬롯(${slotNames[chosen]})에 앞각이 없어 복사 실패`);
-      return;
-    }
-
-    // 복사 수행
-    slotStates[0].flat = source.flat;
-    slotStates[0].add = source.add ?? undefined;
-
-    updateSlotDisplay(0);
-    updateLog(`[황룡] ${type}잠재력각인비서 성공! ${slotNames[chosen]}의 각인을 복사했습니다.`);
+  if (state.flat !== null) {
+    return updateLog("황룡 슬롯에 이미 잠재력이 각인되어 있습니다.");
   }
+
+  // 💸 비용 차감 먼저
+  if (!spend(priceTable.hwangryong[type])) return;
+
+  const successRate = type === '희귀' ? 5 : 3;
+  const success = Math.random() * 100 < successRate;
+
+  hwangryongUsage[type]++;
+  hwangryongSlotUsage[type]++;
+
+  updateUsageSummary();
+
+  if (!success) {
+    updateLog(`[황룡] ${type}잠재력각인비서 실패!`);
+    return;
+  }
+
+  const candidates = [1, 2, 3, 4]; // 주작~현무
+  const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+  const source = slotStates[chosen];
+
+  if (!source.flat) {
+    updateLog(`[황룡] 선택된 슬롯(${slotNames[chosen]})에 앞각이 없어 복사 실패`);
+    return;
+  }
+
+  slotStates[0].flat = source.flat;
+  slotStates[0].add = source.add ?? undefined;
+
+  updateSlotDisplay(0);
+  updateLog(`[황룡] ${type}잠재력각인비서 성공! ${slotNames[chosen]}의 각인을 복사했습니다.`);
+}
+
 
 
   function applyTranscend() {
@@ -748,7 +749,7 @@ function getAddValue(type, flatValue) {
 }
 
 // 초기 소지금
-let gold = 30000000000; // 200억 전
+let gold = 50000000000; // 500억 전
 const initialGold = gold;
 
 const priceTable = {
@@ -757,7 +758,7 @@ const priceTable = {
     "[신수]1.8": 4600000,
     "[신수]1.5": 6000000,
     "[신수]1.0": 3500000 },
-  hwangryong: { "일반": 80000000, "희귀": 15000000 },
+  hwangryong: { "일반": 80000000, "희귀": 150000000 },
   transcend: 700000000
 };
 
@@ -793,18 +794,18 @@ function togglePriceConfig() {
 }
 
 function applyNewPrices() {
-  priceTable.flat["신"] = +document.getElementById("priceFlat신").value;
-  priceTable.flat["보물"] = +document.getElementById("priceFlat보물").value;
-  priceTable.flat["전설"] = +document.getElementById("priceFlat전설").value;
-  priceTable.add["도깨비"] = +document.getElementById("priceAdd도깨비").value;
-  priceTable.add["보물"] = +document.getElementById("priceAdd보물").value;
-  priceTable.add["전설"] = +document.getElementById("priceAdd전설").value;
-  priceTable.add["[신수]1.8"] = +document.getElementById("priceAdd[신수]1.8").value;
-  priceTable.add["[신수]1.5"] = +document.getElementById("priceAdd[신수]1.5").value;
-  priceTable.add["[신수]1.0"] = +document.getElementById("priceAdd[신수]1.0").value;
-  priceTable.hwangryong["일반"] = +document.getElementById("priceHwang일반").value;
-  priceTable.hwangryong["희귀"] = +document.getElementById("priceHwang희귀").value;
-  priceTable.transcend = +document.getElementById("priceTranscend").value;
+  priceTable.flat["신"] = +document.getElementById("priceFlat신").value.replace(/,/g, '');
+  priceTable.flat["보물"] = +document.getElementById("priceFlat보물").value.replace(/,/g, '');
+  priceTable.flat["전설"] = +document.getElementById("priceFlat전설").value.replace(/,/g, '');
+  priceTable.add["도깨비"] = +document.getElementById("priceAdd도깨비").value.replace(/,/g, '');
+  priceTable.add["보물"] = +document.getElementById("priceAdd보물").value.replace(/,/g, '');
+  priceTable.add["전설"] = +document.getElementById("priceAdd전설").value.replace(/,/g, '');
+  priceTable.add["[신수]1.8"] = +document.getElementById("priceAdd[신수]1.8").value.replace(/,/g, '');
+  priceTable.add["[신수]1.5"] = +document.getElementById("priceAdd[신수]1.5").value.replace(/,/g, '');
+  priceTable.add["[신수]1.0"] = +document.getElementById("priceAdd[신수]1.0").value.replace(/,/g, '');
+  priceTable.hwangryong["일반"] = +document.getElementById("priceHwang일반").value.replace(/,/g, '');
+  priceTable.hwangryong["희귀"] = +document.getElementById("priceHwang희귀").value.replace(/,/g, '');
+  priceTable.transcend = +document.getElementById("priceTranscend").value.replace(/,/g, '');
   alert("💰 가격이 성공적으로 반영되었습니다!");
 }
 
@@ -813,10 +814,17 @@ function togglePricePanel() {
   panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
 }
 
+function formatWithComma(input) {
+  const value = input.value.replace(/,/g, '');
+  if (isNaN(value)) return;
+  input.value = Number(value).toLocaleString();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   switchTab('flat');
   updateUsageSummary();
   updateGoldUI();
+  document.querySelectorAll('#priceConfig input').forEach(input => formatWithComma(input));
 });
 
 
