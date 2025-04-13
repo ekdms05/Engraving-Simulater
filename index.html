@@ -210,10 +210,64 @@
   transform: translateY(-1px);
 }
 
+.manual-btn {
+  position: absolute;
+  left: -60px;
+  width: 40px;
+  height: 40px;
+  font-size: 16px;
+  background: #222;
+  color: #ffcc66;
+  border: 1px solid #555;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
             
   </style>
 </head>
 <body>
+
+  <div id="manualPopup" style="display:none; position:fixed; top:50%; left:50%;
+  transform:translate(-50%, -50%);
+  background: linear-gradient(to bottom, #2c2c2c, #1a1a1a); color: #ffcc99;
+  border: 2px solid #cc9966; border-radius: 10px; padding: 20px;
+  width: 300px; z-index: 9999; font-family: 'Malgun Gothic', sans-serif;
+  box-shadow: 0 0 18px #000;">
+  
+  <form id="manualForm">
+    <div style="font-size: 16px; font-weight: bold; text-align: center; margin-bottom: 18px;">
+      🛠 수동 각인 설정
+    </div>
+
+    <div style="margin-bottom: 14px;">
+      <label style="display: block; font-size: 13px; margin-bottom: 7px;">🛡 앞각 (%)</label>
+      <input id="manualFlatInput" type="number" step="0.01"
+        style="width: 92%; padding: 7px 10px;
+        background: #111; color: #fff; border: 1px solid #555;
+        border-radius: 6px; font-size: 13px; appearance: textfield;" />
+    </div>
+
+    <div style="margin-bottom: 20px;">
+      <label style="display: block; font-size: 13px; margin-bottom: 7px;">⚔ 뒷각 (%)</label>
+      <input id="manualAddInput" type="number" step="0.01"
+        style="width: 92%; padding: 7px 10px;
+        background: #111; color: #fff; border: 1px solid #555;
+        border-radius: 6px; font-size: 13px; appearance: textfield;" />
+    </div>
+
+    <div style="text-align: right;">
+      <button type="submit" style="padding: 8px 20px; background: #ffcc66; color: #000;
+        border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">확인</button>
+      <button type="button" onclick="hideManualPopup()" style="padding: 8px 20px;
+        background: #555; color: white; border: none; border-radius: 6px;
+        margin-left: 8px; cursor: pointer;">취소</button>
+    </div>
+  </form>
+</div>
+
+
+
 
 <!-- 🔥 인삿말 배너 -->
 <div id="greetingBanner" style="
@@ -369,7 +423,7 @@ white-space: pre-line;
       </div>
       <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
         <span>🐲 황룡 희귀</span>
-        <input type="text" id="priceHwang희귀" value="15000000" oninput="formatWithComma(this)" style="width: 100px; text-align: right;">
+        <input type="text" id="priceHwang희귀" value="150000000" oninput="formatWithComma(this)" style="width: 100px; text-align: right;">
       </div>
       <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
         <span>✨ 초월각인비서</span>
@@ -392,26 +446,99 @@ white-space: pre-line;
   </div>
 </div>
 
-
 <!-- <img src="kurin.png" id="customImage"> -->
 <div class="background">
-  <div class="slot gold" onclick="selectSlot(0)">
+  <div class="slot gold" style="position: relative;" onclick="selectSlot(0)">
+    <button onclick="event.stopPropagation(); manualSetEngraving(0)" 
+            style="
+              position: absolute; 
+              left: -52px; 
+              top: 1; 
+              width: 28px;
+              height: 28px;
+              font-size: 16px;
+              border-radius: 4px;
+              background: #333;
+              color: #ffcc66;
+              border: 1px solid #777;
+              cursor: pointer;
+            ">🛠 </button>
     <img src="hwangryong.png" alt="황룡">
     <span id="text0">봉인된 문양</span>
   </div>
+
   <div class="slot red" onclick="selectSlot(1)">
+    <button onclick="event.stopPropagation(); manualSetEngraving(1)" 
+          style="
+            position: absolute; 
+            left: -52px; 
+            top: 1; 
+            width: 28px;
+            height: 28px;
+            font-size: 16px;
+            border-radius: 4px;
+            background: #333;
+            color: #ffcc66;
+            border: 1px solid #777;
+            cursor: pointer;
+          ">🛠 </button>
     <img src="juzak.png" alt="주작">
     <span id="text1">봉인된 문양</span>
   </div>
+
   <div class="slot white" onclick="selectSlot(2)">
+    <button onclick="event.stopPropagation(); manualSetEngraving(2)" 
+    style="
+      position: absolute; 
+      left: -52px; 
+      top: 1; 
+      width: 28px;
+      height: 28px;
+      font-size: 16px;
+      border-radius: 4px;
+      background: #333;
+      color: #ffcc66;
+      border: 1px solid #777;
+      cursor: pointer;
+    ">🛠 </button>
     <img src="baekho.png" alt="백호">
     <span id="text2">봉인된 문양</span>
   </div>
+
   <div class="slot blue" onclick="selectSlot(3)">
+    <button onclick="event.stopPropagation(); manualSetEngraving(3)" 
+    style="
+      position: absolute; 
+      left: -52px; 
+      top: 1; 
+      width: 28px;
+      height: 28px;
+      font-size: 16px;
+      border-radius: 4px;
+      background: #333;
+      color: #ffcc66;
+      border: 1px solid #777;
+      cursor: pointer;
+    ">🛠 </button>
     <img src="cheongryong.png" alt="청룡">
     <span id="text3">봉인된 문양</span>
   </div>
+
   <div class="slot green" onclick="selectSlot(4)">
+    <button onclick="event.stopPropagation(); manualSetEngraving(4)" 
+    style="
+      position: absolute; 
+      left: -52px; 
+      top: 1; 
+      width: 28px;
+      height: 28px;
+      font-size: 16px;
+      border-radius: 4px;
+      background: #333;
+      color: #ffcc66;
+      border: 1px solid #777;
+      cursor: pointer;
+    ">🛠 </button>
     <img src="hyeonmu.png" alt="현무">
     <span id="text4">봉인된 문양</span>
   </div>
@@ -1333,6 +1460,53 @@ function resetMoney() {
   updateTotalStatUI();
   updateSlotDisplayAll();
 }
+
+let pendingManualSlot = null;
+
+let manualSlotIndex = null;
+function manualSetEngraving(slotIndex) {
+  // 황룡 체크
+  if (slotIndex === 0 && ![1, 2, 3, 4].every(i => slotStates[i]?.flat != null)) {
+    return alert("❌ 황룡은 모든 수호수 슬롯이 각인되어 있어야 합니다.");
+  }
+
+  manualSlotIndex = slotIndex;
+
+  document.getElementById("manualFlatInput").value = "";
+  document.getElementById("manualAddInput").value = "";
+  document.getElementById("manualPopup").style.display = "block";
+
+  setTimeout(() => document.getElementById("manualFlatInput").focus(), 100);
+}
+
+function hideManualPopup() {
+  document.getElementById("manualPopup").style.display = "none";
+}
+
+// Enter나 확인 눌렀을 때 실행될 로직
+document.getElementById("manualForm").addEventListener("submit", function (e) {
+  e.preventDefault(); // 폼 기본 제출 막기
+
+  const flat = parseFloat(document.getElementById("manualFlatInput").value);
+  const add = parseFloat(document.getElementById("manualAddInput").value);
+
+  if (isNaN(flat)) return alert("❌ 앞각 수치가 잘못되었습니다.");
+  if (isNaN(add)) return alert("❌ 뒷각 수치가 잘못되었습니다.");
+
+  const state = slotStates[manualSlotIndex];
+  state.flat = flat;
+  state.add = add > 0 ? add : undefined;
+  state.statType = currentStat;
+  state.transcendLevel = 0;
+
+  updateSlotDisplay(manualSlotIndex);
+  updateTotalStatUI();
+  updateLog(`${slotNames[manualSlotIndex]} 슬롯에 수동 각인이 적용되었습니다.`);
+  hideManualPopup();
+});
+
+
+
 
 
 document.addEventListener('DOMContentLoaded', () => {
