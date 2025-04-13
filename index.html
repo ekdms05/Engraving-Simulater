@@ -466,9 +466,10 @@ white-space: pre-line;
 
 <!-- 🔄 초기화 버튼들 (중앙 정렬, 좁은 가로폭) -->
 <div style="margin-top: 12px; text-align: center;">
-  <button class="reset-btn" onclick="resetSelectedEngraving()">🧹 선택 초기화</button>
-  <button class="reset-btn" onclick="resetAllEngravings()">🧼 전체 초기화</button>
+  <button class="reset-btn" onclick="resetSelectedEngraving()">🧹 각인 선택 초기화</button>
+  <button class="reset-btn" onclick="resetAllEngravings()">🧼 각인 전체 초기화</button>
   <button class="reset-btn" onclick="clearLog()">🗑 로그 초기화</button>
+  <button class="reset-btn" onclick="resetMoney()">🪙 금전 초기화</button>
 </div>
 
 <!-- 사용량 요약 테이블 표시 -->
@@ -1321,6 +1322,18 @@ function clearLog() {
   // 테이블 다시 그리기
   updateUsageSummary();
 }
+
+function resetMoney() {
+  // 금전 초기화
+  gold = initialGold;
+
+  // UI 갱신
+  updateGoldUI();
+  updateUsageSummary();
+  updateTotalStatUI();
+  updateSlotDisplayAll();
+}
+
 
 document.addEventListener('DOMContentLoaded', () => {
   renderStatTabs();     // 탭 생성
