@@ -988,8 +988,13 @@ function applyTranscend() {
 
   if (!state.flat || !state.add) return updateLog("앞각과 뒷각이 모두 있어야 초월강화가 가능합니다.");
   if (state.add < state.flat * 0.3) return updateLog("뒷각 수치가 앞각의 30% 이상이어야 초월강화가 가능합니다.");
-  if (selectedSlot === 0 && (!state.flat || !state.statType)) return updateLog("황룡 슬롯은 먼저 복사된 각인이 있어야 초월강화를 할 수 있습니다.");
-
+  const hwangState = slotStates[0];
+  const hasFlat = hwangState.flat !== null && !isNaN(hwangState.flat);
+  const hasStat = !!hwangState.statType;
+  if (!hasFlat || !hasStat) {
+    return updateLog("⚠️ 황룡 슬롯에 각인이 없어 초월강화가 불가능합니다.");
+  }
+  // if (slotStates[0] === 0 && (!state.flat || !state.statType)) return updateLog("황룡 슬롯은 먼저 복사된 각인이 있어야 초월강화를 할 수 있습니다.");
   if (!state.transcendLevel) state.transcendLevel = 0;
   if (state.transcendLevel >= 3) return updateLog("초월강화는 슬롯당 최대 3강까지 가능합니다.");
   if (!spend(priceTable.transcend)) return;
